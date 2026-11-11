@@ -1,0 +1,4 @@
+mode,service_days,strategy,train_rows,test_rows,purged_rows,long_trip_groups_gt_5h
+Bus,1,"trip-disjoint, purged within-day split at 2026-09-10 18:00:00",1306725,289280,110730,209
+Light Rail,2,held out last service date 2026-03-30,17180,19341,0,0
+Rail,1,"trip-disjoint, purged within-day split at 2026-03-30 18:29:00",131848,27887,14195,1

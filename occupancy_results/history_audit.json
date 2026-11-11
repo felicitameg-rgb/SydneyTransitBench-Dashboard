@@ -1,0 +1,111 @@
+{
+  "training": [
+    {
+      "cutoff": "2026-03-23 00:00:00",
+      "query_rows": 19756,
+      "history_rows": 0,
+      "latest_history_date": null,
+      "latest_recorded_event": null
+    },
+    {
+      "cutoff": "2026-03-24 00:00:00",
+      "query_rows": 19793,
+      "history_rows": 18833,
+      "latest_history_date": "2026-03-23 00:00:00",
+      "latest_recorded_event": "2026-03-23 23:59:55"
+    },
+    {
+      "cutoff": "2026-03-25 00:00:00",
+      "query_rows": 21212,
+      "history_rows": 38609,
+      "latest_history_date": "2026-03-24 00:00:00",
+      "latest_recorded_event": "2026-03-24 23:59:52"
+    },
+    {
+      "cutoff": "2026-03-26 00:00:00",
+      "query_rows": 21017,
+      "history_rows": 59811,
+      "latest_history_date": "2026-03-25 00:00:00",
+      "latest_recorded_event": "2026-03-25 23:59:56"
+    },
+    {
+      "cutoff": "2026-03-27 00:00:00",
+      "query_rows": 20064,
+      "history_rows": 80744,
+      "latest_history_date": "2026-03-26 00:00:00",
+      "latest_recorded_event": "2026-03-26 23:59:55"
+    },
+    {
+      "cutoff": "2026-03-28 00:00:00",
+      "query_rows": 18831,
+      "history_rows": 100804,
+      "latest_history_date": "2026-03-27 00:00:00",
+      "latest_recorded_event": "2026-03-27 23:59:57"
+    },
+    {
+      "cutoff": "2026-03-29 00:00:00",
+      "query_rows": 17375,
+      "history_rows": 119632,
+      "latest_history_date": "2026-03-28 00:00:00",
+      "latest_recorded_event": "2026-03-28 23:59:58"
+    },
+    {
+      "cutoff": "2026-03-30 00:00:00",
+      "query_rows": 20112,
+      "history_rows": 137181,
+      "latest_history_date": "2026-03-29 00:00:00",
+      "latest_recorded_event": "2026-03-29 23:59:36"
+    },
+    {
+      "cutoff": "2026-09-15 00:00:00",
+      "query_rows": 21494,
+      "history_rows": 158160,
+      "latest_history_date": "2026-03-30 00:00:00",
+      "latest_recorded_event": "2026-03-31 04:07:57"
+    },
+    {
+      "cutoff": "2026-09-16 00:00:00",
+      "query_rows": 19764,
+      "history_rows": 178734,
+      "latest_history_date": "2026-09-15 00:00:00",
+      "latest_recorded_event": "2026-09-15 23:59:51"
+    },
+    {
+      "cutoff": "2026-10-04 00:00:00",
+      "query_rows": 17507,
+      "history_rows": 199418,
+      "latest_history_date": "2026-09-16 00:00:00",
+      "latest_recorded_event": "2026-09-17 01:51:21"
+    },
+    {
+      "cutoff": "2026-10-05 00:00:00",
+      "query_rows": 17933,
+      "history_rows": 216073,
+      "latest_history_date": "2026-10-04 00:00:00",
+      "latest_recorded_event": "2026-10-04 23:59:38"
+    },
+    {
+      "cutoff": "2026-10-06 00:00:00",
+      "query_rows": 21199,
+      "history_rows": 233994,
+      "latest_history_date": "2026-10-05 00:00:00",
+      "latest_recorded_event": "2026-10-05 23:59:56"
+    },
+    {
+      "cutoff": "2026-10-07 00:00:00",
+      "query_rows": 21324,
+      "history_rows": 255110,
+      "latest_history_date": "2026-10-06 00:00:00",
+      "latest_recorded_event": "2026-10-06 23:59:56"
+    }
+  ],
+  "validation": [
+    {
+      "cutoff": "2026-10-08 00:00:00",
+      "query_rows": 97001,
+      "history_rows": 276364,
+      "latest_history_date": "2026-10-07 00:00:00",
+      "latest_recorded_event": "2026-10-07 23:59:54"
+    }
+  ]
+}

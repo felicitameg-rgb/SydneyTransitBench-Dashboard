@@ -1,0 +1,432 @@
+{
+  "dataset_name": "SydneyTransitBench Unified V4",
+  "dataset_version": "V4",
+  "source_file": "multimodal_historical_unified_V4.parquet",
+  "generated_at_utc": "2026-11-11T13:11:56.506061+00:00",
+  "row_count": 16928290,
+  "column_count": 16,
+  "sample_row_count": 50000,
+  "mode_count": 4,
+  "route_count": 4767,
+  "stop_count": 38681,
+  "source_trip_id_count": 207903,
+  "trip_instance_count": 479079,
+  "first_service_date": "2026-03-23",
+  "last_service_date": "2026-10-31",
+  "service_date_count": 26,
+  "logical_duplicate_check": {
+    "logical_key": [
+      "service_date",
+      "source_trip_id",
+      "stop_sequence"
+    ],
+    "complete_key_rows": 16928285,
+    "duplicate_rows_beyond_first": 16709,
+    "duplicate_pct": 0.0987,
+    "note": "This is a logical-key duplicate check, not an automatic recommendation to delete records."
+  },
+  "columns": [
+    {
+      "column_name": "service_date",
+      "data_type": "DATE"
+    },
+    {
+      "column_name": "mode",
+      "data_type": "VARCHAR"
+    },
+    {
+      "column_name": "source_trip_id",
+      "data_type": "VARCHAR"
+    },
+    {
+      "column_name": "gtfs_trip_id",
+      "data_type": "VARCHAR"
+    },
+    {
+      "column_name": "route_id",
+      "data_type": "VARCHAR"
+    },
+    {
+      "column_name": "stop_id",
+      "data_type": "VARCHAR"
+    },
+    {
+      "column_name": "stop_name",
+      "data_type": "VARCHAR"
+    },
+    {
+      "column_name": "stop_sequence",
+      "data_type": "BIGINT"
+    },
+    {
+      "column_name": "scheduled_arrival",
+      "data_type": "VARCHAR"
+    },
+    {
+      "column_name": "actual_arrival",
+      "data_type": "VARCHAR"
+    },
+    {
+      "column_name": "scheduled_departure",
+      "data_type": "TIMESTAMP_NS"
+    },
+    {
+      "column_name": "actual_departure",
+      "data_type": "TIMESTAMP_NS"
+    },
+    {
+      "column_name": "direction",
+      "data_type": "VARCHAR"
+    },
+    {
+      "column_name": "capacity",
+      "data_type": "BIGINT"
+    },
+    {
+      "column_name": "occupancy_range",
+      "data_type": "VARCHAR"
+    },
+    {
+      "column_name": "source_dataset",
+      "data_type": "VARCHAR"
+    }
+  ],
+  "records_by_mode": [
+    {
+      "mode": "BOAM",
+      "row_count": 15837917
+    },
+    {
+      "mode": "ROAM",
+      "row_count": 583631
+    },
+    {
+      "mode": "LOAM",
+      "row_count": 474560
+    },
+    {
+      "mode": "FOAM",
+      "row_count": 32182
+    }
+  ],
+  "records_by_service_date": [
+    {
+      "service_date": "2026-03-23",
+      "row_count": 19756
+    },
+    {
+      "service_date": "2026-03-24",
+      "row_count": 19793
+    },
+    {
+      "service_date": "2026-03-25",
+      "row_count": 21212
+    },
+    {
+      "service_date": "2026-03-26",
+      "row_count": 21017
+    },
+    {
+      "service_date": "2026-03-27",
+      "row_count": 20064
+    },
+    {
+      "service_date": "2026-03-28",
+      "row_count": 18831
+    },
+    {
+      "service_date": "2026-03-29",
+      "row_count": 17375
+    },
+    {
+      "service_date": "2026-03-30",
+      "row_count": 20112
+    },
+    {
+      "service_date": "2026-09-10",
+      "row_count": 1707306
+    },
+    {
+      "service_date": "2026-09-14",
+      "row_count": 214
+    },
+    {
+      "service_date": "2026-09-15",
+      "row_count": 80182
+    },
+    {
+      "service_date": "2026-09-16",
+      "row_count": 19764
+    },
+    {
+      "service_date": "2026-10-04",
+      "row_count": 17645
+    },
+    {
+      "service_date": "2026-10-05",
+      "row_count": 931065
+    },
+    {
+      "service_date": "2026-10-06",
+      "row_count": 1631577
+    },
+    {
+      "service_date": "2026-10-07",
+      "row_count": 1630263
+    },
+    {
+      "service_date": "2026-10-08",
+      "row_count": 1631584
+    },
+    {
+      "service_date": "2026-10-09",
+      "row_count": 1639706
+    },
+    {
+      "service_date": "2026-10-10",
+      "row_count": 1141776
+    },
+    {
+      "service_date": "2026-10-11",
+      "row_count": 928888
+    },
+    {
+      "service_date": "2026-10-12",
+      "row_count": 1780547
+    },
+    {
+      "service_date": "2026-10-13",
+      "row_count": 1786207
+    },
+    {
+      "service_date": "2026-10-14",
+      "row_count": 1784531
+    },
+    {
+      "service_date": "2026-10-29",
+      "row_count": 20381
+    },
+    {
+      "service_date": "2026-10-30",
+      "row_count": 20643
+    },
+    {
+      "service_date": "2026-10-31",
+      "row_count": 17851
+    }
+  ],
+  "records_by_source_dataset": [
+    {
+      "source_dataset": "BOAM_20260910.txt",
+      "row_count": 1707306
+    },
+    {
+      "source_dataset": "BOAM_20261013.txt",
+      "row_count": 1704278
+    },
+    {
+      "source_dataset": "BOAM_20261014.txt",
+      "row_count": 1703108
+    },
+    {
+      "source_dataset": "BOAM_20261012.txt",
+      "row_count": 1699170
+    },
+    {
+      "source_dataset": "BOAM_20261009.txt",
+      "row_count": 1555656
+    },
+    {
+      "source_dataset": "BOAM_20261006.txt",
+      "row_count": 1549363
+    },
+    {
+      "source_dataset": "BOAM_20261008.txt",
+      "row_count": 1547798
+    },
+    {
+      "source_dataset": "BOAM_20261007.txt",
+      "row_count": 1546677
+    },
+    {
+      "source_dataset": "BOAM_20261010.txt",
+      "row_count": 1082866
+    },
+    {
+      "source_dataset": "BOAM_20261011.txt",
+      "row_count": 872753
+    },
+    {
+      "source_dataset": "BOAM_20261005.txt",
+      "row_count": 868942
+    },
+    {
+      "source_dataset": "ROAM_20261009.txt",
+      "row_count": 60078
+    },
+    {
+      "source_dataset": "ROAM_20261008.txt",
+      "row_count": 59450
+    },
+    {
+      "source_dataset": "ROAM_20261007.txt",
+      "row_count": 58825
+    },
+    {
+      "source_dataset": "ROAM",
+      "row_count": 58456
+    },
+    {
+      "source_dataset": "ROAM_20261014.txt",
+      "row_count": 57791
+    },
+    {
+      "source_dataset": "ROAM_20261013.txt",
+      "row_count": 57705
+    },
+    {
+      "source_dataset": "ROAM_20261006.txt",
+      "row_count": 57613
+    },
+    {
+      "source_dataset": "ROAM_20261012.txt",
+      "row_count": 57197
+    },
+    {
+      "source_dataset": "ROAM_20261005.txt",
+      "row_count": 41673
+    },
+    {
+      "source_dataset": "LOAM_20260916.txt",
+      "row_count": 41276
+    },
+    {
+      "source_dataset": "LOAM_20261030.txt",
+      "row_count": 41024
+    },
+    {
+      "source_dataset": "LOAM_20260324.txt",
+      "row_count": 39549
+    },
+    {
+      "source_dataset": "ROAM_20261010.txt",
+      "row_count": 38180
+    },
+    {
+      "source_dataset": "ROAM_20261011.txt",
+      "row_count": 36663
+    },
+    {
+      "source_dataset": "LOAM_20261005.txt",
+      "row_count": 35440
+    },
+    {
+      "source_dataset": "LOAM_20261007.txt",
+      "row_count": 21353
+    },
+    {
+      "source_dataset": "LOAM_20261006.txt",
+      "row_count": 21229
+    },
+    {
+      "source_dataset": "LOAM_20260325.txt",
+      "row_count": 21212
+    },
+    {
+      "source_dataset": "LOAM_20260326.txt",
+      "row_count": 21017
+    },
+    {
+      "source_dataset": "LOAM_20261008.txt",
+      "row_count": 20937
+    },
+    {
+      "source_dataset": "LOAM_20261013.txt",
+      "row_count": 20852
+    },
+    {
+      "source_dataset": "LOAM_20261012.txt",
+      "row_count": 20799
+    },
+    {
+      "source_dataset": "LOAM_20261009.txt",
+      "row_count": 20548
+    },
+    {
+      "source_dataset": "LOAM_20261014.txt",
+      "row_count": 20219
+    },
+    {
+      "source_dataset": "LOAM_20260330.txt",
+      "row_count": 20112
+    },
+    {
+      "source_dataset": "LOAM_20260327.txt",
+      "row_count": 20064
+    },
+    {
+      "source_dataset": "LOAM_20260328.txt",
+      "row_count": 18831
+    },
+    {
+      "source_dataset": "LOAM_20261010.txt",
+      "row_count": 17938
+    },
+    {
+      "source_dataset": "LOAM_20261031.txt",
+      "row_count": 17851
+    },
+    {
+      "source_dataset": "LOAM_20260329.txt",
+      "row_count": 17375
+    },
+    {
+      "source_dataset": "LOAM_20261011.txt",
+      "row_count": 16934
+    },
+    {
+      "source_dataset": "FOAM_20261006.txt",
+      "row_count": 5754
+    },
+    {
+      "source_dataset": "FOAM_20261009.txt",
+      "row_count": 3424
+    },
+    {
+      "source_dataset": "FOAM_20261014.txt",
+      "row_count": 3413
+    },
+    {
+      "source_dataset": "FOAM_20261007.txt",
+      "row_count": 3408
+    },
+    {
+      "source_dataset": "FOAM_20261008.txt",
+      "row_count": 3399
+    },
+    {
+      "source_dataset": "FOAM_20261012.txt",
+      "row_count": 3383
+    },
+    {
+      "source_dataset": "FOAM_20261013.txt",
+      "row_count": 3372
+    },
+    {
+      "source_dataset": "FOAM_20261010.txt",
+      "row_count": 2792
+    },
+    {
+      "source_dataset": "FOAM_20261011.txt",
+      "row_count": 2536
+    },
+    {
+      "source_dataset": "FOAM_20260915.txt",
+      "row_count": 428
+    },
+    {
+      "source_dataset": "FOAM_20261005.txt",
+      "row_count": 273
+    }
+  ]
+}

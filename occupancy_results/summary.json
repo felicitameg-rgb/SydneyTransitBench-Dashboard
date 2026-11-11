@@ -1,0 +1,40 @@
+{
+  "best_validation_macro_f1_model": "hgb_history_200",
+  "train_rows": 277381,
+  "validation_rows": 97001,
+  "results": [
+    {
+      "model_id": "hgb_sqrt_capped",
+      "accuracy": 0.6449624230678034,
+      "macro_f1": 0.15061299299425907,
+      "band_mae": 0.6996216533850167,
+      "within_one_band": 0.869073514706034,
+      "high_band_exact_accuracy": 0.18866772499694712,
+      "high_band_detection_recall": 0.7638295274148248,
+      "seconds": 117.13418076800008
+    },
+    {
+      "model_id": "hgb_history_200",
+      "accuracy": 0.6521272976567252,
+      "macro_f1": 0.17109398568618586,
+      "band_mae": 0.6309625673962124,
+      "within_one_band": 0.8686714569952887,
+      "high_band_exact_accuracy": 0.22035657589449262,
+      "high_band_detection_recall": 0.7535718646965441,
+      "seconds": 468.31337375500016
+    },
+    {
+      "model_id": "hgb_route_history",
+      "accuracy": 0.6582612550386079,
+      "macro_f1": 0.1677340309294776,
+      "band_mae": 0.5912310182369254,
+      "within_one_band": 0.8773930165668395,
+      "high_band_exact_accuracy": 0.2184027353767249,
+      "high_band_detection_recall": 0.7190133105385272,
+      "seconds": 343.92491283200025
+    }
+  ],
+  "saved_models_replay_verified": true,
+  "test_evaluation_performed": false,
+  "note": "Repeated validation development. These results are not an independent final test."
+}
