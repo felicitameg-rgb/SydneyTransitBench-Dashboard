@@ -195,22 +195,36 @@ def overview_page() -> None:
         with left:
             plotly_chart(figure)
 
-    date_data = pd.DataFrame(summary.get("records_by_service_date", []))
-    if not date_data.empty:
-        date_data["service_date"] = pd.to_datetime(date_data["service_date"], errors="coerce")
-        figure = px.line(
-            date_data,
-            x="service_date",
-            y="row_count",
-            markers=True,
-            title="Records by service date",
-            color_discrete_sequence=[COLORS["secondary"]],
-        )
-        figure.update_yaxes(title="Records")
-        figure.update_xaxes(title="Service date")
-        with right:
-            plotly_chart(figure)
+date_data = pd.DataFrame(summary.get("records_by_service_date", []))
+if not date_data.empty:
+    date_data["service_date"] = pd.to_datetime(
+        date_data["service_date"],
+        errors="coerce"
+    )
+    date_data = date_data.dropna(
+        subset=["service_date"]
+    ).sort_values("service_date")
 
+    date_data["service_date"] = date_data[
+        "service_date"
+    ].dt.strftime("%Y-%m-%d")
+
+    figure = px.bar(
+        date_data,
+        x="service_date",
+        y="row_count",
+        title="Record coverage by service date",
+        color_discrete_sequence=[COLORS["secondary"]],
+    )
+    figure.update_yaxes(title="Records")
+    figure.update_xaxes(
+        title="Service date",
+        type="category"
+    )
+
+    with right:
+        plotly_chart(figure)
+    
     st.subheader("Record explorer")
     st.caption(
         "The explorer uses the reproducible dashboard sample; headline statistics above use the complete V4 dataset."
