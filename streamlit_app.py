@@ -758,7 +758,7 @@ def storage_page() -> None:
             st.dataframe(load_csv(str(environment_path)), use_container_width=True, hide_index=True)
 
 
-st.title("🚆 SydneyTransitBench")
+st.title("SydneyTransitBench")
 st.markdown(
     "**Interactive companion for the unified multimodal dataset, data-quality checks, "
     "predictive benchmarks and storage evaluation.**"
