@@ -1,0 +1,5 @@
+mode,strategy,total_service_dates,train_service_dates,test_service_dates,train_first_date,train_last_date,test_first_date,test_last_date,train_rows,test_rows,train_trip_instances,test_trip_instances
+BOAM,chronological_service_date_80_20,4,3,1,2026-09-10,2026-10-13,2026-10-14,2026-10-14,5110662,1703080,131437,43828
+ROAM,chronological_service_date_80_20,11,8,3,2026-09-15,2026-10-11,2026-10-12,2026-10-14,401128,169186,25610,10704
+FOAM,chronological_service_date_80_20,13,10,3,2026-09-14,2026-10-11,2026-10-12,2026-10-14,22000,10167,6080,2799
+LOAM,chronological_service_date_80_20,24,19,5,2026-03-23,2026-10-12,2026-10-13,2026-10-31,352280,95645,23533,6462
