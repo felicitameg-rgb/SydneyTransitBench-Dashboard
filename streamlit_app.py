@@ -79,6 +79,15 @@ def first_existing(*paths: Path) -> Path | None:
     return None
 
 
+def first_matching(directory: Path, *patterns: str) -> Path | None:
+    """Return the first result file, respecting the supplied priority order."""
+    for pattern in patterns:
+        matches = sorted(path for path in directory.glob(pattern) if path.is_file())
+        if matches:
+            return matches[0]
+    return None
+
+
 def normalized(value: object) -> str:
     return re.sub(r"[^a-z0-9]+", "_", str(value).strip().lower()).strip("_")
 
@@ -96,6 +105,25 @@ def find_column(
         name = normalized(column)
         if all(token in name for token in contains):
             return column
+    return None
+
+
+def find_role_column(
+    frame: pd.DataFrame,
+    exact: tuple[str, ...],
+    role_tokens: tuple[str, ...],
+    excluded_tokens: tuple[str, ...] = (),
+) -> str | None:
+    """Find an actual/predicted column even when an experiment uses a new name."""
+    column = find_column(frame, exact=exact)
+    if column:
+        return column
+    for candidate in frame.columns:
+        name = normalized(candidate)
+        if any(token in name for token in role_tokens) and not any(
+            token in name for token in excluded_tokens
+        ):
+            return candidate
     return None
 
 
@@ -135,6 +163,17 @@ def plotly_chart(figure: go.Figure) -> None:
 def page_header(title: str, description: str) -> None:
     st.header(title)
     st.caption(description)
+
+
+def modelling_context() -> None:
+    st.info(
+        "**How this connects to the unified pipeline:** the predictive tasks use the "
+        "standardised, quality-checked and GTFS-linked records produced by the unified "
+        "pipeline. Chronological evaluation on unseen service dates tests whether those "
+        "records support generalisable analysis, while the storage and query benchmarks "
+        "test whether the same dataset can be reused efficiently. The modelling is therefore "
+        "downstream validation of the pipeline's practical analytical value, not a separate contribution."
+    )
 
 
 def overview_page() -> None:
@@ -180,6 +219,8 @@ def overview_page() -> None:
             unsafe_allow_html=True,
         )
 
+    modelling_context()
+
     left, right = st.columns(2)
     mode_data = pd.DataFrame(summary.get("records_by_mode", []))
     if not mode_data.empty:
@@ -197,34 +238,19 @@ def overview_page() -> None:
 
     date_data = pd.DataFrame(summary.get("records_by_service_date", []))
     if not date_data.empty:
-        date_data["service_date"] = pd.to_datetime(
-            date_data["service_date"],
-            errors="coerce"
-        )
-        date_data = date_data.dropna(
-            subset=["service_date"]
-        ).sort_values("service_date")
-
-        date_data["service_date"] = date_data[
-            "service_date"
-        ].dt.strftime("%Y-%m-%d")
-
+        date_data["service_date"] = pd.to_datetime(date_data["service_date"], errors="coerce")
         figure = px.bar(
             date_data,
             x="service_date",
             y="row_count",
-            title="Record coverage by service date",
+            title="Records by service date",
             color_discrete_sequence=[COLORS["secondary"]],
         )
         figure.update_yaxes(title="Records")
-        figure.update_xaxes(
-            title="Service date",
-            type="category"
-        )
-
+        figure.update_xaxes(title="Service date")
         with right:
             plotly_chart(figure)
-    
+
     st.subheader("Record explorer")
     st.caption(
         "The explorer uses the reproducible dashboard sample; headline statistics above use the complete V4 dataset."
@@ -383,21 +409,25 @@ def delay_page() -> None:
         "Delay Prediction",
         "Comparison of delay baselines and LightGBM, with split audit and held-out error analysis.",
     )
-    st.warning(
-        "Preliminary delay benchmark based on the frozen V1 dataset. "
-        "Replace these files when the multi-date V4 delay evaluation is complete."
-    )
+    modelling_context()
 
-    metrics_path = DELAY_DIR / "v2_model_metrics_all_modes.csv"
-    predictions_path = DELAY_DIR / "v2_all_heldout_predictions.csv.gz"
-    split_path = first_existing(
-        DELAY_DIR / "v2_split_audit.csv",
-        DELAY_DIR / "v2_split_audit (1).csv",
-    )
+    metrics_path = DELAY_DIR / "v4_model_metrics_all_modes.csv"
+    predictions_path = DELAY_DIR / "v4_dashboard_heldout_predictions.csv.gz"
+    split_path = DELAY_DIR / "v4_split_audit.csv"
 
-    if not metrics_path.is_file():
-        show_missing_file(metrics_path, "delay model comparison")
+    required_delay_files = [metrics_path, predictions_path, split_path]
+    missing_delay_files = [path.name for path in required_delay_files if not path.is_file()]
+    if missing_delay_files:
+        st.warning(
+            "The V4 delay section cannot be displayed because these files are missing from "
+            f"`delay_results`: {', '.join(missing_delay_files)}"
+        )
         return
+
+    st.caption(
+        "Final V4 evaluation using chronological, multi-date training and held-out later "
+        "service dates. Earlier preliminary delay results are not used on this page."
+    )
 
     metrics = load_csv(str(metrics_path))
     model_column = find_column(metrics, exact=("model", "model_name"))
@@ -455,24 +485,34 @@ def delay_page() -> None:
 
     st.dataframe(display_metrics, use_container_width=True, hide_index=True)
 
-    if split_path and split_path.is_file():
-        with st.expander("Train–test split audit", expanded=False):
-            st.dataframe(load_csv(str(split_path)), use_container_width=True, hide_index=True)
+    with st.expander("Train–test split audit", expanded=False):
+        st.dataframe(load_csv(str(split_path)), use_container_width=True, hide_index=True)
 
     st.subheader("Held-out prediction analysis")
-    if not predictions_path.is_file():
-        show_missing_file(predictions_path, "delay prediction analysis")
-        return
-
     predictions = load_csv(str(predictions_path), nrows=150_000)
     actual_column = find_column(
         predictions,
-        exact=("actual_delay", "actual_delay_minutes", "y_true", "actual"),
+        exact=(
+            "actual_delay",
+            "actual_delay_minutes",
+            "actual_delay_min",
+            "observed_delay",
+            "target_delay",
+            "y_true",
+            "actual",
+        ),
         contains=("actual", "delay"),
     )
     predicted_column = find_column(
         predictions,
-        exact=("predicted_delay", "predicted_delay_minutes", "y_pred", "prediction"),
+        exact=(
+            "predicted_delay",
+            "predicted_delay_minutes",
+            "predicted_delay_min",
+            "forecast_delay",
+            "y_pred",
+            "prediction",
+        ),
         contains=("pred", "delay"),
     )
     prediction_model = find_column(predictions, exact=("model", "model_name"))
@@ -481,13 +521,15 @@ def delay_page() -> None:
     filtered = predictions.copy()
     filter_columns = st.columns(2)
     if prediction_model:
-        models = sorted(filtered[prediction_model].dropna().astype(str).unique())
-        selected_model = filter_columns[0].selectbox("Model", models)
-        filtered = filtered[filtered[prediction_model].astype(str) == selected_model]
+        models = sorted(predictions[prediction_model].dropna().astype(str).unique())
+        selected_model = filter_columns[0].selectbox("Model", ["All models", *models])
+        if selected_model != "All models":
+            filtered = filtered[filtered[prediction_model].astype(str) == selected_model]
     if prediction_mode:
-        modes = sorted(filtered[prediction_mode].dropna().astype(str).unique())
-        selected_prediction_mode = filter_columns[1].selectbox("Mode", modes)
-        filtered = filtered[filtered[prediction_mode].astype(str) == selected_prediction_mode]
+        modes = sorted(predictions[prediction_mode].dropna().astype(str).unique())
+        selected_prediction_mode = filter_columns[1].selectbox("Mode", ["All modes", *modes])
+        if selected_prediction_mode != "All modes":
+            filtered = filtered[filtered[prediction_mode].astype(str) == selected_prediction_mode]
 
     if actual_column and predicted_column:
         filtered = filtered.copy()
@@ -498,12 +540,23 @@ def delay_page() -> None:
             filtered[actual_column] - filtered[predicted_column]
         ).abs()
 
+        st.caption(
+            f"Showing {len(filtered):,} held-out predictions after filtering "
+            f"(loaded from `{predictions_path.name}`)."
+        )
+        if len(filtered) < 2:
+            st.warning(
+                "This filter combination contains fewer than two predictions, so it cannot "
+                "show a meaningful distribution. Select All models and All modes."
+            )
+
         left, right = st.columns(2)
         plot_sample = filtered.sample(min(5_000, len(filtered)), random_state=42) if len(filtered) else filtered
         scatter = px.scatter(
             plot_sample,
             x=actual_column,
             y=predicted_column,
+            color=prediction_model if prediction_model and prediction_model in plot_sample.columns else None,
             opacity=0.35,
             title="Actual vs predicted delay",
             color_discrete_sequence=[COLORS["primary"]],
@@ -533,7 +586,11 @@ def delay_page() -> None:
                 hide_index=True,
             )
     else:
-        st.info("Prediction columns were loaded, but their names could not be identified automatically.")
+        st.info(
+            "The held-out file was loaded, but the actual and predicted delay columns could "
+            "not be identified. Rename them to `actual_delay_minutes` and "
+            "`predicted_delay_minutes`, or add their names to the aliases in the app."
+        )
         st.dataframe(predictions.head(500), use_container_width=True, hide_index=True)
 
 
@@ -546,6 +603,7 @@ def occupancy_page() -> None:
         "Validation results only — independent testing on unseen service dates is still outstanding. "
         "Performance on rare high-occupancy bands remains limited."
     )
+    modelling_context()
 
     metrics_path = OCCUPANCY_DIR / "validation_metrics.csv"
     daily_path = OCCUPANCY_DIR / "daily_validation_metrics.csv"
@@ -629,17 +687,45 @@ def occupancy_page() -> None:
 
     if predictions_path.is_file():
         predictions = load_parquet(str(predictions_path))
-        actual_column = find_column(
+        actual_column = find_role_column(
             predictions,
-            exact=("actual_band", "true_band", "y_true", "actual", "occupancy_range"),
-            contains=("actual",),
+            exact=(
+                "actual_band",
+                "true_band",
+                "actual_occupancy_band",
+                "occupancy_band",
+                "occupancy_range",
+                "occupancy_status",
+                "target_band",
+                "true_label",
+                "y_true",
+                "y_test",
+                "actual",
+            ),
+            role_tokens=("actual", "true", "observed", "target"),
+            excluded_tokens=("pred", "forecast", "estimate"),
         )
-        predicted_column = find_column(
+        predicted_column = find_role_column(
             predictions,
-            exact=("predicted_band", "prediction", "y_pred", "predicted"),
-            contains=("pred",),
+            exact=(
+                "predicted_band",
+                "predicted_occupancy_band",
+                "pred_occupancy_band",
+                "predicted_label",
+                "prediction_label",
+                "prediction",
+                "y_pred",
+                "y_hat",
+                "predicted",
+            ),
+            role_tokens=("pred", "prediction", "forecast", "estimate"),
         )
         if actual_column and predicted_column:
+            with right:
+                st.caption(
+                    f"Confusion matrix uses `{actual_column}` as the actual class and "
+                    f"`{predicted_column}` as the predicted class."
+                )
             matrix = pd.crosstab(
                 predictions[actual_column].astype(str),
                 predictions[predicted_column].astype(str),
@@ -656,7 +742,36 @@ def occupancy_page() -> None:
                 plotly_chart(heatmap)
         else:
             with right:
-                st.info("Prediction columns could not be identified automatically.")
+                st.info(
+                    "Choose the actual and predicted occupancy columns below. This fallback "
+                    "keeps the dashboard usable when experiment output names change."
+                )
+                selectable = [str(column) for column in predictions.columns]
+                selected_actual = st.selectbox(
+                    "Actual occupancy column",
+                    ["Select a column", *selectable],
+                    key="occupancy_actual_column",
+                )
+                predicted_options = [column for column in selectable if column != selected_actual]
+                selected_predicted = st.selectbox(
+                    "Predicted occupancy column",
+                    ["Select a column", *predicted_options],
+                    key="occupancy_predicted_column",
+                )
+                if selected_actual != "Select a column" and selected_predicted != "Select a column":
+                    matrix = pd.crosstab(
+                        predictions[selected_actual].astype(str),
+                        predictions[selected_predicted].astype(str),
+                    )
+                    heatmap = px.imshow(
+                        matrix,
+                        text_auto=True,
+                        aspect="auto",
+                        title="Occupancy-band confusion matrix",
+                        labels=dict(x="Predicted band", y="Actual band", color="Records"),
+                        color_continuous_scale="Blues",
+                    )
+                    plotly_chart(heatmap)
 
     if summary_path.is_file():
         with st.expander("Experiment summary", expanded=False):
@@ -809,4 +924,3 @@ st.caption(
     "SydneyTransitBench · Dashboard figures are computed from the supplied V4 summaries, "
     "benchmark outputs and model-evaluation files."
 )
-
