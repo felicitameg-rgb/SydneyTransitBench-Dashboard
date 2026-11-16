@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gc
 import json
 import re
 from pathlib import Path
@@ -42,6 +43,17 @@ st.markdown(
         background: #ffffff;
     }
     [data-testid="stMetricLabel"] {color: #667085;}
+    [data-testid="stMetricValue"] {
+        font-size: 1.45rem !important;
+        line-height: 1.25 !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+    }
+    [data-testid="stMetricValue"] > div {
+        font-size: inherit !important;
+        line-height: inherit !important;
+        white-space: normal !important;
+    }
     .small-note {color: #667085; font-size: 0.9rem;}
     .section-card {
         border: 1px solid #e5e7eb;
@@ -56,18 +68,33 @@ st.markdown(
 )
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(
+    show_spinner=False,
+    ttl=3600,
+    max_entries=4,
+    max_size="5MB",
+)
 def load_json(path: str) -> dict:
     with open(path, "r", encoding="utf-8") as handle:
         return json.load(handle)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(
+    show_spinner=False,
+    ttl=3600,
+    max_entries=4,
+    max_size="60MB",
+)
 def load_csv(path: str, nrows: int | None = None) -> pd.DataFrame:
     return pd.read_csv(path, nrows=nrows, low_memory=False)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(
+    show_spinner=False,
+    ttl=3600,
+    max_entries=4,
+    max_size="60MB",
+)
 def load_parquet(path: str) -> pd.DataFrame:
     return pd.read_parquet(path)
 
@@ -125,6 +152,46 @@ def find_role_column(
         ):
             return candidate
     return None
+
+
+def friendly_model_name(value: object) -> str:
+    """Convert experiment identifiers into reader-friendly dashboard labels."""
+    raw_name = str(value)
+    key = normalized(raw_name)
+    labels = {
+        "scheduled_arrival_zero_delay": "Zero-delay baseline",
+        "historical_median_by_mode": "Mode-level historical median",
+        "route_and_hour_median": "Route and hour median",
+        "lightgbm_scheduled_features": "LightGBM model",
+        "hgb_history_200": "Historical occupancy model",
+        "hgb_route_history": "Route-specific occupancy model",
+        "hgb_sqrt_capped": "Capped-sample occupancy model",
+    }
+    return labels.get(key, raw_name.replace("_", " ").strip().title())
+
+
+def model_explanation(value: object) -> str:
+    """Explain model labels in plain language for non-technical readers."""
+    key = normalized(value)
+    explanations = {
+        "route_and_hour_median": (
+            "Route and hour median predicts delay using the historical median delay "
+            "for the same route and scheduled hour."
+        ),
+        "hgb_history_200": (
+            "Historical occupancy model uses previous occupancy observations to predict "
+            "the occupancy band. hgb_history_200 is only its internal experiment ID."
+        ),
+        "hgb_route_history": (
+            "Route-specific occupancy model uses historical occupancy patterns fitted "
+            "separately by route."
+        ),
+        "hgb_sqrt_capped": (
+            "Capped-sample occupancy model is a comparison model trained with capped "
+            "sampling to reduce class imbalance."
+        ),
+    }
+    return explanations.get(key, "The displayed name is a reader-friendly label for the experiment model.")
 
 
 def numeric(frame: pd.DataFrame, column: str | None) -> pd.Series:
@@ -456,23 +523,27 @@ def delay_page() -> None:
     if model_column and mae_column:
         best = display_metrics.loc[numeric(display_metrics, mae_column).idxmin()]
         cards = st.columns(4)
-        cards[0].metric("Best model", str(best[model_column]))
+        cards[0].metric("Best model", friendly_model_name(best[model_column]))
         cards[1].metric("Best MAE", f"{format_number(best[mae_column], 3)} min")
         if rmse_column:
             cards[2].metric("RMSE", f"{format_number(best[rmse_column], 3)} min")
         if within_column:
             cards[3].metric("Within ±5 minutes", f"{format_number(best[within_column])}%")
 
+        st.caption(model_explanation(best[model_column]))
+
         values = [column for column in [mae_column, rmse_column] if column]
-        chart_data = display_metrics[[model_column] + values].melt(
-            id_vars=[model_column],
+        chart_source = display_metrics[[model_column] + values].copy()
+        chart_source["model_label"] = chart_source[model_column].map(friendly_model_name)
+        chart_data = chart_source[["model_label"] + values].melt(
+            id_vars=["model_label"],
             value_vars=values,
             var_name="metric",
             value_name="minutes",
         )
         figure = px.bar(
             chart_data,
-            x=model_column,
+            x="model_label",
             y="minutes",
             color="metric",
             barmode="group",
@@ -483,13 +554,16 @@ def delay_page() -> None:
         figure.update_xaxes(title="Model")
         plotly_chart(figure)
 
-    st.dataframe(display_metrics, use_container_width=True, hide_index=True)
+    delay_table = display_metrics.copy()
+    if model_column:
+        delay_table.insert(0, "Model label", delay_table[model_column].map(friendly_model_name))
+    st.dataframe(delay_table, use_container_width=True, hide_index=True)
 
     with st.expander("Train–test split audit", expanded=False):
         st.dataframe(load_csv(str(split_path)), use_container_width=True, hide_index=True)
 
     st.subheader("Held-out prediction analysis")
-    predictions = load_csv(str(predictions_path), nrows=150_000)
+    predictions = load_csv(str(predictions_path), nrows=30_000)
     actual_column = find_column(
         predictions,
         exact=(
@@ -551,7 +625,11 @@ def delay_page() -> None:
             )
 
         left, right = st.columns(2)
-        plot_sample = filtered.sample(min(5_000, len(filtered)), random_state=42) if len(filtered) else filtered
+        plot_sample = (
+            filtered.sample(min(3_000, len(filtered)), random_state=42)
+            if len(filtered)
+            else filtered
+        )
         scatter = px.scatter(
             plot_sample,
             x=actual_column,
@@ -569,7 +647,7 @@ def delay_page() -> None:
             plotly_chart(scatter)
 
         histogram = px.histogram(
-            filtered,
+            plot_sample,
             x="absolute_error_minutes",
             nbins=50,
             title="Absolute-error distribution",
@@ -626,7 +704,7 @@ def occupancy_page() -> None:
         best_index = numeric(metrics, macro_column).idxmax()
         best = metrics.loc[best_index]
         cards = st.columns(4)
-        cards[0].metric("Selected model", str(best[model_column]))
+        cards[0].metric("Selected model", friendly_model_name(best[model_column]))
         cards[1].metric("Macro F1", format_number(best[macro_column], 4))
         if accuracy_column:
             accuracy = float(best[accuracy_column])
@@ -635,9 +713,13 @@ def occupancy_page() -> None:
         if band_column:
             cards[3].metric("Band MAE", format_number(best[band_column], 4))
 
+        st.caption(model_explanation(best[model_column]))
+
         values = [column for column in [macro_column, accuracy_column] if column]
-        chart_data = metrics[[model_column] + values].melt(
-            id_vars=[model_column],
+        chart_source = metrics[[model_column] + values].copy()
+        chart_source["model_label"] = chart_source[model_column].map(friendly_model_name)
+        chart_data = chart_source[["model_label"] + values].melt(
+            id_vars=["model_label"],
             value_vars=values,
             var_name="metric",
             value_name="score",
@@ -648,7 +730,7 @@ def occupancy_page() -> None:
                 chart_data.loc[mask, "score"] *= 100
         figure = px.bar(
             chart_data,
-            x=model_column,
+            x="model_label",
             y="score",
             color="metric",
             barmode="group",
@@ -659,7 +741,10 @@ def occupancy_page() -> None:
         figure.update_xaxes(title="Model")
         plotly_chart(figure)
 
-    st.dataframe(metrics, use_container_width=True, hide_index=True)
+    occupancy_table = metrics.copy()
+    if model_column:
+        occupancy_table.insert(0, "Model label", occupancy_table[model_column].map(friendly_model_name))
+    st.dataframe(occupancy_table, use_container_width=True, hide_index=True)
 
     if daily_path.is_file():
         daily = load_csv(str(daily_path))
@@ -906,6 +991,12 @@ page = st.radio(
     label_visibility="collapsed",
 )
 
+previous_page = st.session_state.get("_previous_page")
+if previous_page is not None and previous_page != page:
+    st.cache_data.clear()
+    gc.collect()
+st.session_state["_previous_page"] = page
+
 st.divider()
 
 if page.startswith("1"):
@@ -924,3 +1015,4 @@ st.caption(
     "SydneyTransitBench · Dashboard figures are computed from the supplied V4 summaries, "
     "benchmark outputs and model-evaluation files."
 )
+
