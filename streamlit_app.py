@@ -234,19 +234,19 @@ def page_header(title: str, description: str) -> None:
 
 def modelling_context() -> None:
     st.info(
-        "**How this connects to the unified pipeline:** the predictive tasks use the "
-        "standardised, quality-checked and GTFS-linked records produced by the unified "
-        "pipeline. Chronological evaluation on unseen service dates tests whether those "
+        "**How this connects to the Final V4 workflow:** the predictive tasks use the "
+        "standardised, quality-checked and GTFS-linked records in the Final V4 "
+        "dataset. Chronological evaluation on unseen service dates tests whether those "
         "records support generalisable analysis, while the storage and query benchmarks "
-        "test whether the same dataset can be reused efficiently. The modelling is therefore "
-        "downstream validation of the pipeline's practical analytical value, not a separate contribution."
+        "test whether the Final V4 dataset can be reused efficiently. The modelling is therefore "
+        "downstream validation of the Final V4 data's practical analytical value, not a separate contribution."
     )
 
 
 def overview_page() -> None:
     page_header(
         "Dataset Overview",
-        "Final unified V4 dataset, pipeline summary and interactive record explorer.",
+        "Final V4 dataset, processing summary and interactive record explorer.",
     )
 
     summary_path = DATA_DIR / "v4_dataset_summary.json"
@@ -270,7 +270,7 @@ def overview_page() -> None:
         f"**Common-schema fields:** {summary.get('column_count', '—')}"
     )
 
-    st.subheader("Unified data pipeline")
+    st.subheader("Final V4 data workflow")
     pipeline = [
         ("1", "Source datasets", "BOAM, FOAM, LOAM and ROAM"),
         ("2", "Standardisation", "Common 16-field schema"),
@@ -974,7 +974,7 @@ def storage_page() -> None:
 
 st.title("SydneyTransitBench")
 st.markdown(
-    "**Interactive companion for the unified multimodal dataset, data-quality checks, "
+    "**Interactive companion for the Final V4 multimodal dataset, data-quality checks, "
     "predictive benchmarks and storage evaluation.**"
 )
 
